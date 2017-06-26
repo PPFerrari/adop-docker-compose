@@ -1,42 +1,43 @@
 #!/bin/bash -e
 
-echo ' 
-      ###    ########   #######  ########  
-     ## ##   ##     ## ##     ## ##     ## 
-    ##   ##  ##     ## ##     ## ##     ## 
-   ##     ## ##     ## ##     ## ########  
-   ######### ##     ## ##     ## ##        
-   ##     ## ##     ## ##     ## ##        
-   ##     ## ########   #######  ##        
+echo '
+      ###    ########   #######  ########
+     ## ##   ##     ## ##     ## ##     ##
+    ##   ##  ##     ## ##     ## ##     ##
+   ##     ## ##     ## ##     ## ########
+   ######### ##     ## ##     ## ##
+   ##     ## ##     ## ##     ## ##
+   ##     ## ########   #######  ##
 '
 
 usage(){
    cat <<END_USAGE
 
 Usage:
-        ./quickstart.sh 
-	    -t local 
-	    [-m <MACHINE_NAME>] 
-	    [-u <INITIAL_ADMIN_USER>] 
-	    [-p <INITIAL_ADMIN_PASSWORD>]
+        ./quickstart.sh
+            -t local
+            [-m <MACHINE_NAME>]
+            [-u <INITIAL_ADMIN_USER>]
+            [-p <INITIAL_ADMIN_PASSWORD>]
 
-        ./quickstart.sh 
-	    -t aws 
-	    -m <MACHINE_NAME> 
-	    -c <AWS_VPC_ID> 
-	    -r <AWS_DEFAULT_REGION> 
-	    [-z <AVAILABILITY_ZONE_LETTER>] 
-	    [-a <AWS_ACCESS_KEY>] 
-	    [-s <AWS_SECRET_ACCESS_KEY>] 
-	    [-u <INITIAL_ADMIN_USER>] 
-	    [-p <INITIAL_ADMIN_PASSWORD>]
+        ./quickstart.sh
+            -t aws
+            -m <MACHINE_NAME>
+            -c <AWS_VPC_ID>
+            -r <AWS_DEFAULT_REGION>
+            [-z <AVAILABILITY_ZONE_LETTER>]
+            [-a <AWS_ACCESS_KEY>]
+            [-s <AWS_SECRET_ACCESS_KEY>]
+            [-u <INITIAL_ADMIN_USER>]
+            [-p <INITIAL_ADMIN_PASSWORD>]
 
 
-        ./quickstart.sh 
-	    -t openstack 
-	    -o <OPENSTACK_CONFIG_FILE>
-	    [-u <INITIAL_ADMIN_USER>] 
-	    [-p <INITIAL_ADMIN_PASSWORD>]
+        ./quickstart.sh
+            -t openstack
+            -m <MACHINE_NAME>
+            -O <OPENSTACK_CONFIG_FILE>
+            [-u <INITIAL_ADMIN_USER>]
+            [-p <INITIAL_ADMIN_PASSWORD>]
 
 END_USAGE
 }
@@ -54,7 +55,7 @@ provision_local() {
     if [ $? -eq 0 ]; then
         echo "Docker machine '$MACHINE_NAME' already exists"
     else
-	# To run adop stack locally atleast 6144 MB is required.
+        # To run adop stack locally atleast 6144 MB is required.
         docker-machine create --driver virtualbox --virtualbox-memory 6144 ${MACHINE_NAME}
     fi
 
@@ -62,16 +63,16 @@ provision_local() {
     set -e
 
 }
-    
+
 # Function to create AWS-specific environment variables file
-source_aws() {  
+source_aws() {
   AWS_FILE='./conf/provider/env.provider.aws.sh'
 
-  if [ -f ${AWS_FILE} ]; then  
+  if [ -f ${AWS_FILE} ]; then
     echo "Your AWS parameters file already exists, deleting it..."
     rm -f ${AWS_FILE}
   fi
-    
+
   echo "Creating a new AWS variables file..."
   cp ./conf/provider/examples/env.provider.aws.sh.example ${AWS_FILE}
 
@@ -79,7 +80,7 @@ source_aws() {
   if [ -z ${AWS_VPC_ID} ]; then
     usage
     exit 1
-  else    
+  else
     sed -i'' -e "s/###AWS_VPC_ID###/$AWS_VPC_ID/g" ${AWS_FILE}
   fi
 
@@ -100,7 +101,7 @@ source_aws() {
   else
     sed -i'' -e "s/###AWS_SUBNET_ID###/$AWS_SUBNET_ID/g" ${AWS_FILE}
   fi
-  
+
   sed -i'' -e "s/###AWS_DEFAULT_REGION###/$AWS_DEFAULT_REGION/g" ${AWS_FILE}
 
 }
@@ -131,9 +132,9 @@ provision_aws() {
     then
       echo "WARN: AWS_SECRET_ACCESS_KEY not set (externally or with -s), delegating to Docker Machine"
     fi
-    
+
     if [ -z ${AWS_DOCKER_MACHINE_SIZE} ]; then
-    	export AWS_DOCKER_MACHINE_SIZE="m4.xlarge"
+        export AWS_DOCKER_MACHINE_SIZE="m4.xlarge"
     fi
 
     # Create a file with AWS parameters
@@ -145,10 +146,10 @@ provision_aws() {
     # Create Docker machine if one doesn't already exist with the same name
     docker-machine ip ${MACHINE_NAME} > /dev/null 2>&1
     rc=$?
-    
+
     # Reenable errexit
     set -e
-    
+
     if [ ${rc} -eq 0 ]; then
         echo "Docker machine '$MACHINE_NAME' already exists"
     else
@@ -174,10 +175,10 @@ provision_aws() {
 
 
 source_openstack() {
-  
+
   if [ -f ${OPENSTACK_CONFIG_FILE} ]; then
     source ${OPENSTACK_CONFIG_FILE}
-  else 
+  else
       echo "ERROR: ${OPENSTACK_CONFIG_FILE} does not exist!"
       exit 1
   fi
@@ -185,18 +186,25 @@ source_openstack() {
 
   if [ -f ${OPENSTACK_RC_FILE} ]; then
     source ${OPENSTACK_RC_FILE}
-  else 
+  else
       echo "ERROR: ${OPENSTACK_RC_FILE} does not exist!"
       exit 1
   fi
 
+  echo ${OPENSTACK_FLAVOR}
+  echo ${OPENSTACK_IMAGE_ID}
+  echo ${OPENSTACK_NETWORK}
+  echo ${OPENSTACK_SECURITY_GROUP}
+  echo ${OPENSTACK_SSH_USER}
+  echo ${OPENSTACK_SSH_KEY_NAME}
 }
 
 
 provision_openstack() {
-  
-  if [ -z ${MACHINE_NAME} ] | \
-     [ -z ${OPENSTACK_CONFIG_FILE} ]
+  echo ${MACHINE_NAME}
+  echo ${OPENSTACK_CONFIG_FILE}
+
+  if [ -z ${MACHINE_NAME} ];
      then
         echo "ERROR: Mandatory parameters missing!"
         usage
@@ -204,31 +212,27 @@ provision_openstack() {
   fi
 
 
-  set +x
   source_openstack
 
 
   if [ -z ${OPENSTACK_FLAVOR} ] | \
-     [ -z ${OPENSTACK_IMAGE_ID} ] | \
-     [ -z ${OPENSTACK_NETWORK} ] | \ 
-     [ -z ${OPENSTACK_SECURITY_GROUP} ] | \ 
-     [ -z ${OPENSTACK_SSH_USER} ] | \
+     [ -z ${OPENSTACK_IMAGE_ID} ] | [ -z ${OPENSTACK_NETWORK} ] | [ -z ${OPENSTACK_SECURITY_GROUP} ] | [ -z ${OPENSTACK_SSH_USER} ] | \
      [ -z ${OPENSTACK_SSH_KEY_NAME} ];
      then
         echo "ERROR: Openstack machine information missing!"
         exit 1
-  fi 
+  fi
 
 
-  
 
+  set +e
   # Create Docker machine if one doesn't already exist with the same name
   docker-machine ip ${MACHINE_NAME} > /dev/null 2>&1
   rc=$?
-    
+
   # Reenable errexit
   set -e
-  
+
   if [ ${rc} -eq 0 ]; then
     echo "Docker machine '$MACHINE_NAME' already exists"
   else
@@ -240,7 +244,8 @@ provision_openstack() {
       --openstack-sec-groups ${OPENSTACK_SECURITY_GROUP} \
       --openstack-net-name ${OPENSTACK_NETWORK} \
       --openstack-ssh-user ${OPENSTACK_SSH_USER} \
-      --openstack-keypair-name  ${OPENSTACK_SSH_KEY_NAME}"
+      --openstack-keypair-name  ${OPENSTACK_SSH_KEY_NAME} \
+      --openstack-private-key-file ${OPENSTACK_SSH_KEY_FILE}"
   fi
 
 
@@ -250,7 +255,7 @@ provision_openstack() {
 }
 
 
-while getopts "t:m:a:s:c:z:r:u:p:O" opt; do
+while getopts "t:m:a:s:c:z:r:u:p:o:" opt; do
   case ${opt} in
     t)
       export MACHINE_TYPE=${OPTARG}
@@ -278,10 +283,10 @@ while getopts "t:m:a:s:c:z:r:u:p:O" opt; do
       ;;
     p)
       export INITIAL_ADMIN_PASSWORD_PLAIN=${OPTARG}
-      ;; 
-    O)
-      export OPENSTACK_CONFIG_FILE=${OPTARG}
-      ;;    
+      ;;
+    o)
+      export OPENSTACK_CONFIG_FILE="${OPTARG}"
+      ;;
     *)
       echo "Invalid parameter(s) or option(s)."
       usage
