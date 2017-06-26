@@ -31,6 +31,13 @@ Usage:
 	    [-u <INITIAL_ADMIN_USER>] 
 	    [-p <INITIAL_ADMIN_PASSWORD>]
 
+
+        ./quickstart.sh 
+	    -t openstack 
+	    -o <OPENSTACK_CONFIG_FILE>
+	    [-u <INITIAL_ADMIN_USER>] 
+	    [-p <INITIAL_ADMIN_PASSWORD>]
+
 END_USAGE
 }
 
@@ -164,7 +171,86 @@ provision_aws() {
     fi
 }
 
-while getopts "t:m:a:s:c:z:r:u:p:" opt; do
+
+
+source_openstack() {
+  
+  if [ -f ${OPENSTACK_CONFIG_FILE} ]; then
+    source ${OPENSTACK_CONFIG_FILE}
+  else 
+      echo "ERROR: ${OPENSTACK_CONFIG_FILE} does not exist!"
+      exit 1
+  fi
+
+
+  if [ -f ${OPENSTACK_RC_FILE} ]; then
+    source ${OPENSTACK_RC_FILE}
+  else 
+      echo "ERROR: ${OPENSTACK_RC_FILE} does not exist!"
+      exit 1
+  fi
+
+}
+
+
+provision_openstack() {
+  
+  if [ -z ${MACHINE_NAME} ] | \
+     [ -z ${OPENSTACK_CONFIG_FILE} ]
+     then
+        echo "ERROR: Mandatory parameters missing!"
+        usage
+        exit 1
+  fi
+
+
+  set +x
+  source_openstack
+
+
+  if [ -z ${OPENSTACK_FLAVOR} ] | \
+     [ -z ${OPENSTACK_IMAGE_ID} ] | \
+     [ -z ${OPENSTACK_NETWORK} ] | \ 
+     [ -z ${OPENSTACK_SECURITY_GROUP} ] | \ 
+     [ -z ${OPENSTACK_SSH_USER} ] | \
+     [ -z ${OPENSTACK_SSH_KEY_NAME} ];
+     then
+        echo "ERROR: Openstack machine information missing!"
+        exit 1
+  fi 
+
+
+  
+
+  # Create Docker machine if one doesn't already exist with the same name
+  docker-machine ip ${MACHINE_NAME} > /dev/null 2>&1
+  rc=$?
+    
+  # Reenable errexit
+  set -e
+  
+  if [ ${rc} -eq 0 ]; then
+    echo "Docker machine '$MACHINE_NAME' already exists"
+  else
+
+    MACHINE_CREATE_CMD="docker-machine create \
+      --driver openstack \
+      --openstack-image-id ${OPENSTACK_IMAGE_ID} \
+      --openstack-flavor-name ${OPENSTACK_FLAVOR} \
+      --openstack-sec-groups ${OPENSTACK_SECURITY_GROUP} \
+      --openstack-net-name ${OPENSTACK_NETWORK} \
+      --openstack-ssh-user ${OPENSTACK_SSH_USER} \
+      --openstack-keypair-name  ${OPENSTACK_SSH_KEY_NAME}"
+  fi
+
+
+  MACHINE_CREATE_CMD="${MACHINE_CREATE_CMD} ${MACHINE_NAME}"
+  ${MACHINE_CREATE_CMD}
+
+}
+
+
+while getopts "t:m:a:s:c:z:r:u:p:O" opt; do
   case ${opt} in
     t)
       export MACHINE_TYPE=${OPTARG}
@@ -192,7 +278,10 @@ while getopts "t:m:a:s:c:z:r:u:p:" opt; do
       ;;
     p)
       export INITIAL_ADMIN_PASSWORD_PLAIN=${OPTARG}
-      ;;      
+      ;; 
+    O)
+      export OPENSTACK_CONFIG_FILE=${OPTARG}
+      ;;    
     *)
       echo "Invalid parameter(s) or option(s)."
       usage
@@ -217,6 +306,9 @@ case ${MACHINE_TYPE} in
     "aws")
         provision_aws
         CLI_COMPOSE_OPTS="-f etc/aws/default.yml"
+        ;;
+    "openstack")
+        provision_openstack
         ;;
     *)
         echo "Invalid parameter(s) or option(s)."
