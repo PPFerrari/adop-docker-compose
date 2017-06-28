@@ -249,10 +249,9 @@ provision_openstack() {
   fi
   
 
-  echo "COMPOSE_HTTP_TIMEOUT=120" >> .env
+  echo "COMPOSE_HTTP_TIMEOUT=120" > .env
   MACHINE_CREATE_CMD="${MACHINE_CREATE_CMD} ${MACHINE_NAME}"
-  ${MACHINE_CREATE_CMD} || rm -f .env
-  rm -f .env
+  ${MACHINE_CREATE_CMD}
 
 }
 
