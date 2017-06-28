@@ -191,18 +191,10 @@ source_openstack() {
       exit 1
   fi
 
-  echo ${OPENSTACK_FLAVOR}
-  echo ${OPENSTACK_IMAGE_ID}
-  echo ${OPENSTACK_NETWORK}
-  echo ${OPENSTACK_SECURITY_GROUP}
-  echo ${OPENSTACK_SSH_USER}
-  echo ${OPENSTACK_SSH_KEY_NAME}
 }
 
 
 provision_openstack() {
-  echo ${MACHINE_NAME}
-  echo ${OPENSTACK_CONFIG_FILE}
 
   if [ -z ${MACHINE_NAME} ];
      then
