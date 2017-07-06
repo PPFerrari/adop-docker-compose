@@ -238,13 +238,12 @@ provision_openstack() {
       --openstack-ssh-user ${OPENSTACK_SSH_USER} \
       --openstack-keypair-name  ${OPENSTACK_SSH_KEY_NAME} \
       --openstack-private-key-file ${OPENSTACK_SSH_KEY_FILE}"
-  fi
   
+    MACHINE_CREATE_CMD="${MACHINE_CREATE_CMD} ${MACHINE_NAME}"
+    ${MACHINE_CREATE_CMD}
+  fi
 
   echo "COMPOSE_HTTP_TIMEOUT=120" > .env
-  MACHINE_CREATE_CMD="${MACHINE_CREATE_CMD} ${MACHINE_NAME}"
-  ${MACHINE_CREATE_CMD}
-
 }
 
 
