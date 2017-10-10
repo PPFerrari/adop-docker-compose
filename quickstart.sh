@@ -227,6 +227,7 @@ provision_openstack() {
 
   if [ ${rc} -eq 0 ]; then
     echo "Docker machine '$MACHINE_NAME' already exists"
+    ${CLI_COMPOSE_SUBCOMMAND}="--without-pull"
   else
 
     MACHINE_CREATE_CMD="docker-machine create \
@@ -315,7 +316,7 @@ esac
 # Use the ADOP CLI
 eval $(docker-machine env ${MACHINE_NAME})
 
-./adop compose -m "${MACHINE_NAME}" ${CLI_COMPOSE_OPTS} init
+./adop compose -m "${MACHINE_NAME}" ${CLI_COMPOSE_OPTS} init ${CLI_COMPOSE_SUBCOMMAND}
 
 # Generate and export Self-Signed SSL certificate for Docker Registry, applicable only for AWS type
 if [ ${MACHINE_TYPE} == "aws" ]; then
