@@ -227,7 +227,7 @@ provision_openstack() {
 
   if [ ${rc} -eq 0 ]; then
     echo "Docker machine '$MACHINE_NAME' already exists"
-    ${CLI_COMPOSE_SUBCOMMAND}="--without-pull"
+    CLI_COMPOSE_SUBCOMMAND="--without-pull"
   else
 
     MACHINE_CREATE_CMD="docker-machine create \
