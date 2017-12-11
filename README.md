@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/Accenture/adop-docker-compose.svg?branch=master)](https://travis-ci.org/Accenture/adop-docker-compose)
-[![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/Accenture/ADOP)
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Accenture/ADOP)
 
 # The DevOps Platform: Overview
 
@@ -21,7 +21,7 @@ Once you have explored this the next step is to create your own Workspace and Pr
 
 # Quickstart Instructions
 
-These instructions will spin up an instance in a single server in AWS (for evaluation purposes).  Please check the [prerequisites](https://accenture.github.io/adop-docker-compose/docs/prerequisites/).
+These instructions will spin up an instance in a single server in AWS ([for **_evaluation_** purposes](https://accenture.github.io/adop-docker-compose/docs/evaluation-mode)).  Please check the [prerequisites](https://accenture.github.io/adop-docker-compose/docs/prerequisites/).
 
 NB. the instructions will also work in anywhere supported by [Docker Machine](https://docs.docker.com/machine/), just follow the relevant Docker Machine instructions for your target platform and then start at step 3 below and (you can set the AWS_VPC_ID to NA).
 
